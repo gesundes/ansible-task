@@ -1,0 +1,36 @@
+---
+- name: CPUFREQ | Check if frequency control is possible
+  ansible.builtin.stat:
+    path: /usr/lib/modules/{{ ansible_kernel }}/kernel/drivers/cpufreq
+  register: cpufreq_availability
+
+- name: CPUFREQ | Print frequency control status
+  ansible.builtin.debug:
+    msg: "Frequency control is {{ 'possible' if cpufreq_availability.stat.exists else 'not possible' }}"
+
+- name: CPUFREQ | Install cpufrequtils package
+  ansible.builtin.package:
+    name: cpufrequtils
+    state: present
+  when: cpufreq_availability.stat.exists
+
+- name: CPUFREQ | Configure cpufrequtils
+  ansible.builtin.command:
+    cmd: cpufreq-set -r -g performance
+  when: cpufreq_availability.stat.exists
+
+- name: CPUFREQ | Make the configuration persistent
+  ansible.builtin.copy:
+    src: cpufrequtils
+    dest: /etc/default/cpufrequtils
+    owner: root
+    group: root
+    mode: '0600'
+  when: cpufreq_availability.stat.exists
+
+- name: CPUFREQ | Make sure cpufrequtils.service is enabled and started
+  ansible.builtin.systemd:
+    name: cpufrequtils
+    state: started
+    enabled: true
+  when: cpufreq_availability.stat.exists

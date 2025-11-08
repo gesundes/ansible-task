@@ -1,0 +1,3 @@
+---
+basic_reboot_allowed: true
+basic_netrename_interface_name: net0

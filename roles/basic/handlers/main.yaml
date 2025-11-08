@@ -1,0 +1,9 @@
+---
+- name: VM reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  when: basic_reboot_allowed is true
+
+- name: Apply netplan configuration
+  ansible.builtin.command:
+    cmd: /usr/sbin/netplan apply

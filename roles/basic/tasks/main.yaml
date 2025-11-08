@@ -1,0 +1,36 @@
+---
+- name: Import assertions
+  ansible.builtin.import_tasks:
+    file: assertions.yaml
+  tags:
+    - always
+
+- name: Import cpufreq tasks
+  ansible.builtin.import_tasks:
+    file: cpufreq.yaml
+  tags:
+    - cpufreq
+
+- name: Import cstate tasks
+  ansible.builtin.import_tasks:
+    file: cstate.yaml
+  tags:
+    - cstate
+
+- name: Import luks tasks
+  ansible.builtin.import_tasks:
+    file: luks.yaml
+  tags:
+    - luks
+
+- name: Import netrename tasks
+  ansible.builtin.import_tasks:
+    file: netrename.yaml
+  tags:
+    - netrename
+
+- name: Import lscpu tasks
+  ansible.builtin.import_tasks:
+    file: lscpu.yaml
+  tags:
+    - lscpu

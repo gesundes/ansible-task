@@ -1,0 +1,8 @@
+---
+- name: LSCPU | Print CPU information
+  ansible.builtin.debug:
+    msg:
+      - "Number of vCPUs: {{ ansible_processor_vcpus }}"
+      - "Number of physical cores: {{ ansible_processor_cores }}"
+      - "Hyper-Threading: {{ 'enabled' if ansible_processor_threads_per_core >= 2 else 'disabled' }}"
+      - "CPU model: {{ ansible_processor[2] }}"

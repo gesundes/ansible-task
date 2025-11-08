@@ -1,0 +1,26 @@
+---
+# global variables
+# reboot_allowed grants ability to reboot a system using a corresponding handler
+basic_reboot_allowed: false
+
+# cstate
+# cstate_maxcstate allows to set maximum cstate value for the system
+# The value can be between 0 and 9
+basic_cstate_maxcstate: 0
+
+# netrename
+# netrename_interface_name sets a new name for the default network interface
+basic_netrename_interface_name: net0
+
+# luks
+# luks_drives describes a list of drives to be encrypted using LUKS
+# Can be configured in the inventory file as well as in the group_vars or in the playbook
+# mountpoint and fstype are optional fields
+# Example:
+# luks_drives:
+#   - device: /dev/nvme1n1
+#     keyfile: /etc/luks/nvme1n1.keyfile
+#     name: nvme1n1
+#     mountpoint: /mnt/luks
+#     fstype: ext4
+basic_luks_drives: []

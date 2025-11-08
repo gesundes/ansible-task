@@ -1,0 +1,15 @@
+---
+- name: CSTATE | Append intel_idle.max_cstate={{ basic_cstate_maxcstate }} processor.max_cstate={{ basic_cstate_maxcstate }} to grub default config
+  ansible.builtin.lineinfile:
+    state: present
+    path: /etc/default/grub
+    regexp: '^(GRUB_CMDLINE_LINUX=").*'
+    line: '\1intel_idle.max_cstate={{ basic_cstate_maxcstate }} processor.max_cstate={{ basic_cstate_maxcstate }}"'
+    backrefs: true
+  register: grub_update_result
+  
+- name: CSTATE | Update grub config
+  ansible.builtin.command:
+    cmd: update-grub
+  when: grub_update_result.changed
+  notify: VM reboot

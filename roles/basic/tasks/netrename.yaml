@@ -1,0 +1,25 @@
+---
+- name: NETRENAME | Show current interface name
+  ansible.builtin.debug:
+    msg: "Current default interface name: {{ ansible_default_ipv4.interface }}"
+
+- name: NETRENAME | Create a netplan configuration file
+  ansible.builtin.template:
+    src: netplan.j2
+    dest: /etc/netplan/99-netcfg.yaml
+    mode: '0600'
+    owner: root
+    group: root
+  notify:
+    - Apply netplan configuration
+  
+- name: NETRENAME | Apply netplan configuration
+  ansible.builtin.meta: flush_handlers
+
+- name: NETRENAME | Gather only network interface facts
+  ansible.builtin.setup:
+    filter: "ansible_default_ipv4"
+
+- name: NETRENAME | Show updated interface name
+  ansible.builtin.debug:
+    msg: "Updated default interface name: {{ ansible_default_ipv4.interface }}"

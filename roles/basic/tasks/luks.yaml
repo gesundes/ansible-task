@@ -1,0 +1,109 @@
+---
+- name: LUKS | Install prerequisites
+  ansible.builtin.package:
+    name:
+      - cryptsetup
+    state: latest
+
+- name: LUKS | Ensure keyfile directories exist
+  ansible.builtin.file:
+    path: "{{ item.keyfile | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop: "{{ basic_luks_drives }}"
+  register: keyfile_dirs
+
+- name: LUKS | Results of keyfile directories creation
+  ansible.builtin.debug:
+    msg: "Directory {{ item.path }} {{ 'was created.' if item.changed else 'already exists.' }}"
+  loop: "{{ keyfile_dirs.results }}"
+  loop_control:
+    label: "{{ item.invocation.module_args.path }}"
+
+- name: LUKS | Create keyfiles
+  community.crypto.openssl_privatekey:
+    path: "{{ item.keyfile }}"
+    type: RSA
+    size: 4096
+  loop: "{{ basic_luks_drives }}"
+  register: keyfiles
+
+- name: LUKS | Results of keyfiles creation
+  ansible.builtin.debug:
+    msg: "Keyfile {{ item.filename }} {{ 'was created.' if item.changed else 'already exists.' }}"
+  loop: "{{ keyfiles.results }}"
+  loop_control:
+    label: "{{ item.filename }}"
+
+- name: LUKS | Create and open LUKS volumes
+  community.crypto.luks_device:
+    name: "{{ item.name }}"
+    device: "{{ item.device }}"
+    state: "opened"
+    keyfile: "{{ item.keyfile }}"
+    type: luks2
+  loop: "{{ basic_luks_drives }}"
+  register: luks_volumes
+
+- name: LUKS | Results of LUKS volumes creation
+  ansible.builtin.debug:
+    msg: "LUKS volume {{ item.name }} {{ 'was created.' if item.changed else 'already exists.' }}"
+  loop: "{{ luks_volumes.results }}"
+  loop_control:
+    label: "device: {{ item.invocation.module_args.device }}, keyfile: {{ item.invocation.module_args.keyfile }}"
+
+- name: LUKS | Add the LUKS devices to crypttab
+  community.general.crypttab:
+    name: "{{ item.name }}"
+    state: present
+    password: "{{ item.keyfile }}"
+    backing_device: "{{ item.device }}"
+  loop: "{{ basic_luks_drives }}"
+  no_log: true
+  register: crypttab_entries
+
+- name: LUKS | Results of crypttab entries creation
+  ansible.builtin.debug:
+    msg: "Device {{ item.name }} {{ 'was added to crypttab.' if item.changed else 'already exists in the crypttab.' }}"
+  loop: "{{ crypttab_entries.results }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: LUKS | Create a filesystem on the LUKS devices
+  community.general.filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: /dev/mapper/{{ item.name }}
+    state: present
+  loop: "{{ basic_luks_drives }}"
+  when:
+  - item.fstype is defined
+  - item.fstype != ""
+  register: mkfs_ext4
+
+- name: LUKS | Results of filesystem creation
+  ansible.builtin.debug:
+    msg: "Filesystem {{ 'was created' if item.changed else 'already exists' }} on device {{ item.invocation.module_args.dev }}."
+  loop: "{{ mkfs_ext4.results }}"
+  loop_control:
+    label: "Device: {{ item.invocation.module_args.dev }}, filesystem: {{ item.invocation.module_args.fstype }}"
+
+- name: LUKS | Mount the LUKS devices
+  ansible.builtin.mount:
+    path: "{{ item.mountpoint }}"
+    src: /dev/mapper/{{ item.name }}
+    fstype: "{{ item.fstype }}"
+    state: mounted
+  loop: "{{ basic_luks_drives }}"
+  when:
+    - item.mountpoint is defined
+    - item.mountpoint != ""
+  register: mount_results
+
+- name: LUKS | Results of mounting LUKS devices
+  ansible.builtin.debug:
+    msg: "Encrypted device {{ 'was mounted' if item.changed else 'already mounted' }} to {{ item.name }}."
+  loop: "{{ mount_results.results }}"
+  loop_control:
+    label: "Device: {{ item.src }}, mountpoint: {{ item.name }}"

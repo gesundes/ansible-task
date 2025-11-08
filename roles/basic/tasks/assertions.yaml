@@ -1,0 +1,32 @@
+---
+- name: ASSERTIONS | Check CPU frequency settings
+  ansible.builtin.assert:
+    that:
+      - basic_cstate_maxcstate >= 0
+      - basic_cstate_maxcstate <=9
+    fail_msg: "cstate_maxcstate value is not within the expected range: from 0 to 9."
+  tags:
+    - cstate
+
+- name: ASSERTIONS | Check LUKS encryption settings are defined
+  ansible.builtin.assert:
+    that:
+      - basic_luks_drives is defined
+      - basic_luks_drives | length > 0
+    fail_msg: "luks_drives variable is not defined and encryption is not possible."
+  tags:
+    - luks
+
+- name: ASSERTIONS | Check all necessary LUKS settings are defined
+  ansible.builtin.assert:
+    that:
+      - item.device is defined
+      - item.device | length > 0
+      - item.keyfile is defined
+      - item.keyfile | length > 0
+      - item.name is defined
+      - item.name | length > 0
+    fail_msg: "Some of the necessary LUKS variables are not defined: luks_drives.device, luks_drives.keyfile, luks_drives.name."
+  loop: "{{ basic_luks_drives }}"
+  tags:
+    - luks
