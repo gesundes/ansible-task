@@ -8,6 +8,10 @@
     backrefs: true
   register: grub_update_result
   
+- name: CSTATE | Results of grub default config update
+  ansible.builtin.debug:
+    msg: "{{ grub_update_result.msg }}"
+
 - name: CSTATE | Update grub config
   ansible.builtin.command:
     cmd: update-grub

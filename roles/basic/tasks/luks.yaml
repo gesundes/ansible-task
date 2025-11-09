@@ -29,6 +29,7 @@
     size: 4096
   loop: "{{ basic_luks_drives }}"
   register: keyfiles
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Results of keyfiles creation
   ansible.builtin.debug:
@@ -36,6 +37,7 @@
   loop: "{{ keyfiles.results }}"
   loop_control:
     label: "{{ item.filename }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Create and open LUKS volumes
   community.crypto.luks_device:
@@ -43,9 +45,11 @@
     device: "{{ item.device }}"
     state: "opened"
     keyfile: "{{ item.keyfile }}"
+    label: "{{ item.name }}"
     type: luks2
   loop: "{{ basic_luks_drives }}"
   register: luks_volumes
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Results of LUKS volumes creation
   ansible.builtin.debug:
@@ -53,13 +57,14 @@
   loop: "{{ luks_volumes.results }}"
   loop_control:
     label: "device: {{ item.invocation.module_args.device }}, keyfile: {{ item.invocation.module_args.keyfile }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Add the LUKS devices to crypttab
   community.general.crypttab:
     name: "{{ item.name }}"
     state: present
     password: "{{ item.keyfile }}"
-    backing_device: "{{ item.device }}"
+    backing_device: "LABEL={{ item.name }}"
   loop: "{{ basic_luks_drives }}"
   no_log: true
   register: crypttab_entries
@@ -81,6 +86,7 @@
   - item.fstype is defined
   - item.fstype != ""
   register: mkfs_ext4
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Results of filesystem creation
   ansible.builtin.debug:
@@ -88,6 +94,7 @@
   loop: "{{ mkfs_ext4.results }}"
   loop_control:
     label: "Device: {{ item.invocation.module_args.dev }}, filesystem: {{ item.invocation.module_args.fstype }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: LUKS | Mount the LUKS devices
   ansible.builtin.mount:

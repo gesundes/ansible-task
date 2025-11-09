@@ -35,3 +35,7 @@ Final applicaton of the cstate limitation requires host reboot. Just in case the
 
 ## luks
 This role can encrypt any number of drives/partitions but it doesn't preserve its content. **So be careful using it.**
+
+It can encrypt multiple disks/partitions, just describe them as a list.
+
+To be able to open volumes during reboot volume labels are used in the */etc/crypttab* file. Why is so? Because during reboot of EC2 instances disk names (like /dev/nvme2n1) can be changed.

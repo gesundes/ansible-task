@@ -10,11 +10,12 @@
     mode: '0600'
     owner: root
     group: root
-  notify:
-    - Apply netplan configuration
-  
-- name: NETRENAME | Apply netplan configuration
-  ansible.builtin.meta: flush_handlers
+  register: netplan_config
+
+- name: Apply netplan configuration
+  ansible.builtin.command:
+    cmd: /usr/sbin/netplan apply
+  when: netplan_config.changed
 
 - name: NETRENAME | Gather only network interface facts
   ansible.builtin.setup:
