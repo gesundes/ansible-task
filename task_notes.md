@@ -47,4 +47,4 @@ So I implemented a check as a first step is it possible to apply a governor chan
 In case of t2.small instances (and all other instances) it's not possibly to apply this configuration.
 
 ## Fifth
-Even if I didn't add enough debug information everywhere I hope I was able to show that I can do it especially in the [roles/basic/tasks/luks.yaml](roles/basic/tasks/luks.yaml) file.
+Even if I didn't add enough debug information everywhere I hope I was able to show that I can do it. Especially in the [roles/basic/tasks/luks.yaml](roles/basic/tasks/luks.yaml) file.
