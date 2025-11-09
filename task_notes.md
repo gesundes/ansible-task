@@ -48,3 +48,6 @@ In case of t2.small instances (and all other instances) it's not possibly to app
 
 ## Fifth
 Even if I didn't add enough debug information everywhere I hope I was able to show that I can do it. Especially in the [roles/basic/tasks/luks.yaml](roles/basic/tasks/luks.yaml) file.
+
+## Sixth
+Why we have a *basic_* prefix in variables names? In case if we apply multiple roles to hosts these roles can have the same variable names and we can get a mess. So it's better to have prefixes with same value as role names to avoid that kind of situations
